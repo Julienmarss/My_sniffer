@@ -60,7 +60,11 @@ jobs:
       # Pas de "timeout" sous macOS (coreutils GNU absent): on borne a la main.
       - name: Capture reelle (preuve sur du vrai materiel macOS)
         run: |
-          sudo ./build/mysniffer capture -c 3 > capture.log 2>&1 &
+          ./build/mysniffer interfaces --all
+          # en0 est la carte principale sur les runners macOS de GitHub. Sans
+          # le preciser, le programme peut choisir une pseudo-interface
+          # interne d'Apple (anpi0, awdl0...), montee mais sans trafic reel.
+          sudo ./build/mysniffer capture -i en0 -c 3 > capture.log 2>&1 &
           CAPTURE_PID=$!
           ( sleep 2
             curl -s -o /dev/null https://example.com || true
@@ -97,14 +101,25 @@ jobs:
           curl.exe -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.16.zip
           Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
 
+      # PowerShell ne s'arrete pas tout seul quand une commande externe
+      # echoue (contrairement a "set -e" en sh): sans ces verifications, une
+      # compilation ratee continuait silencieusement vers des erreurs en
+      # cascade qui cachaient la vraie cause. On verifie donc $LASTEXITCODE
+      # a chaque etape et on s'arrete net au premier probleme.
       - name: Compiler et tester
         run: |
           cmake -S . -B build -DWARNINGS_AS_ERRORS=ON -DNPCAP_SDK_DIR="${{ github.workspace }}\npcap-sdk"
+          if ($LASTEXITCODE -ne 0) { throw "configuration cmake echouee" }
           cmake --build build --config Release
+          if ($LASTEXITCODE -ne 0) { throw "compilation echouee" }
           ctest --test-dir build -C Release --output-on-failure
+          if ($LASTEXITCODE -ne 0) { throw "des tests echouent" }
           $exe = Get-ChildItem -Path build -Recurse -Filter mysniffer.exe | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $exe) { throw "mysniffer.exe introuvable apres compilation" }
           & $exe --version
+          if ($LASTEXITCODE -ne 0) { throw "--version a echoue" }
           & $exe interfaces --all
+          if ($LASTEXITCODE -ne 0) { throw "interfaces a echoue" }
 
   freebsd:
     # Les machines macOS de GitHub ne savent pas heberger de machine virtuelle,

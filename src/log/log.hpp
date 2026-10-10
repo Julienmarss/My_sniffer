@@ -2,6 +2,16 @@
 
 #include <string>
 
+// L'attribut format n'existe que chez GCC et Clang: MSVC ne le comprend pas
+// du tout et refuse de compiler (pas un simple avertissement ignore, une
+// vraie erreur de syntaxe). On le neutralise donc ailleurs.
+#if defined(__GNUC__) || defined(__clang__)
+#  define FORMAT_PRINTF(format_index, first_arg) \
+       __attribute__((format(printf, format_index, first_arg)))
+#else
+#  define FORMAT_PRINTF(format_index, first_arg)
+#endif
+
 enum LogLevel {
     LOG_DEBUG,   // detail utile pour comprendre un probleme
     LOG_INFO,    // evenement normal de la vie du programme
@@ -30,5 +40,4 @@ void log_close(void);
 // L'attribut format demande au compilateur de verifier que les arguments
 // correspondent au texte, exactement comme il le fait pour printf. Une faute
 // devient une erreur de compilation au lieu d'un plantage a l'execution.
-void log_write(LogLevel level, const char *format, ...)
-    __attribute__((format(printf, 2, 3)));
+void log_write(LogLevel level, const char *format, ...) FORMAT_PRINTF(2, 3);

@@ -106,6 +106,7 @@ bool capture_open(Capture *capture, const std::string &interface_name,
     }
 
     capture->fd = fd;
+    capture->promiscuous_active = promiscuous;
     // 65536 octets, soit plus que la plus grande trame Ethernet possible.
     capture->buffer.resize(65536);
     return true;

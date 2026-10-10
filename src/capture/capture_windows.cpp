@@ -89,6 +89,10 @@ bool capture_open(Capture *capture, const std::string &interface_name,
     }
 
     capture->handle = handle;
+    // Npcap ne distingue pas "refuse" de "non gere": pcap_open_live echouerait
+    // dans les deux cas plutot que de rendre la main sans mode espion. On ne
+    // peut donc que constater ce qui a ete demande, pas le verifier a part.
+    capture->promiscuous_active = promiscuous;
     return true;
 }
 

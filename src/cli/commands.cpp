@@ -335,13 +335,17 @@ int command_capture(const CaptureOptions &settings)
     }
 
     log_write(LOG_INFO, "capture ouverte sur %s, mode espion %s",
-              name.c_str(), settings.promiscuous ? "actif" : "inactif");
+              name.c_str(), capture.promiscuous_active ? "actif" : "inactif");
+    if (settings.promiscuous && !capture.promiscuous_active) {
+        log_write(LOG_WARN, "mode espion demande mais non gere par %s: "
+                  "la capture se limite au trafic de cette machine", name.c_str());
+    }
 
     // Ces messages vont sur la sortie d'erreur et non sur la sortie standard.
     // C'est ce que fait tcpdump, et pour la meme raison: la sortie standard ne
     // doit contenir que le resultat, pour qu'on puisse la rediriger proprement.
     fprintf(stderr, "Ecoute sur %s%s. Ctrl+C pour arreter.\n",
-            name.c_str(), settings.promiscuous ? " (mode espion)" : "");
+            name.c_str(), capture.promiscuous_active ? " (mode espion)" : "");
     if (writer.file != NULL)
         fprintf(stderr, "Enregistrement dans %s (les paquets ne defilent pas a l'ecran).\n",
                 settings.output_path.c_str());

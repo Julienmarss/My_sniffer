@@ -120,10 +120,23 @@ bool capture_open(Capture *capture, const std::string &interface_name,
         return false;
     }
 
-    if (promiscuous && ioctl(fd, BIOCPROMISC, NULL) < 0) {
-        set_error(error, "impossible d'activer le mode espion", errno);
-        close(fd);
-        return false;
+    capture->promiscuous_active = false;
+    if (promiscuous) {
+        if (ioctl(fd, BIOCPROMISC, NULL) < 0) {
+            // ENOTSUP/EOPNOTSUPP (meme valeur sur la plupart des systemes BSD)
+            // veut dire que cette interface ne gere pas du tout le mode
+            // espion, pas qu'on manque de droits. C'est le cas des
+            // pseudo-interfaces internes de macOS (anpi0, awdl0...), actives
+            // et montees mais pas destinees a du trafic ordinaire. On
+            // continue alors sans mode espion plutot que de tout refuser.
+            if (errno != ENOTSUP && errno != EOPNOTSUPP) {
+                set_error(error, "impossible d'activer le mode espion", errno);
+                close(fd);
+                return false;
+            }
+        } else {
+            capture->promiscuous_active = true;
+        }
     }
 
     // On verifie qu'on est bien sur de l'Ethernet. Sur la boucle locale,

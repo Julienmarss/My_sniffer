@@ -5,6 +5,20 @@ Toutes les modifications notables de ce projet sont listees ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et le projet suit le [versionnage semantique](https://semver.org/lang/fr/).
 
+## [1.0.1] - 2026-10-10
+
+### Corrige
+
+- Compilation Windows cassee par `__attribute__((format(printf, ...)))` dans
+  `log.hpp`: cette syntaxe est propre a GCC et Clang, MSVC refusait de
+  compiler. Neutralisee sur les autres compilateurs par une macro.
+- Mode espion refuse sans recours sur certaines interfaces qui ne le gerent
+  pas du tout (observe sur `anpi0`, une pseudo-interface interne de macOS,
+  via la CI): `capture_bsd.cpp` continue maintenant sans mode espion dans ce
+  cas precis (erreur systeme ENOTSUP), au lieu de refuser toute capture.
+  Le programme dit desormais honnetement si le mode espion demande n'a pas
+  pu etre obtenu, au lieu de pretendre qu'il l'a ete.
+
 ## [1.0.0] - 2026-10-10
 
 ### Ajoute

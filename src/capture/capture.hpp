@@ -26,6 +26,13 @@ struct Capture {
     // Utilise seulement par la version Windows: Npcap manipule un pcap_t*,
     // pas un descripteur entier. "fd" reste a -1 sur ce systeme.
     void *handle = nullptr;
+
+    // Vrai si le mode espion demande a reellement ete obtenu. Certaines
+    // interfaces (les pseudo-interfaces internes de macOS comme anpi0 ou
+    // awdl0, par exemple) sont actives et montees mais ne le gerent pas du
+    // tout: capture_open continue alors sans, plutot que de refuser toute
+    // capture pour un detail que l'utilisateur ne peut pas corriger.
+    bool promiscuous_active = false;
 };
 
 // Ouvre une capture sur l'interface donnee.
