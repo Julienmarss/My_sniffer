@@ -4,12 +4,13 @@ Cette fiche reprend le sujet phrase par phrase et dit, pour chacune, ou en est
 le projet et comment le prouver. Elle sert a deux choses: savoir ou on va, et
 preparer les questions du jury.
 
-Derniere mise a jour: 11 septembre 2026.
+Derniere mise a jour: 10 octobre 2026.
 
-> **Le point qui prime sur tous les autres:** le depot ne contient AUCUN commit,
-> et le depot distant est vide. Le sujet dit que seul le travail present dans le
-> depot est evalue. En l'etat, rien ne l'est, quelle que soit la qualite du code.
-> C'est la premiere chose a faire, avant tout le reste.
+> **Depot commite, pousse et etiquete `v1.0.0`.** Le point qui primait sur tous
+> les autres (aucun commit, rien d'evalue) est resolu. Ce qui reste prioritaire
+> maintenant: confirmer une vraie capture sur macOS (la CI vient d'etre
+> declenchee par ce push, a verifier) et sur Windows (a tester dans une VM,
+> aucune CI ne peut le prouver sans y installer Npcap a la main).
 
 Legende: **fait** / **partiel** / **a faire**
 
@@ -25,7 +26,7 @@ Legende: **fait** / **partiel** / **a faire**
 | Compile sans erreur ni warning | fait | `./scripts/verify.sh` echoue au moindre warning |
 | Aucun plantage | fait | Sanitizers sur toute la suite de tests, et chaque paquet de test est coupe a toutes les positions possibles |
 | Systeme de compilation au choix, avec tout ce qu'il faut pour compiler, installer et lancer | fait | CMake, cible d'installation, `docs/BUILD.md` et `docs/INSTALL.md` |
-| C'est un produit, pas un devoir | partiel | Documentation, changelog et tests sont la. Il manque les etiquettes de version et les scripts par plateforme. |
+| C'est un produit, pas un devoir | fait | Documentation, changelog, tests, etiquette `v1.0.0`, scripts d'installation par plateforme (Linux, FreeBSD, macOS; Windows passe par l'installeur Npcap) |
 | Documenter les privileges necessaires | fait | `docs/PRIVILEGES.md`, une section par systeme |
 
 ---
@@ -47,12 +48,13 @@ Comment le prouver: `./build/tests/tests` affiche le detail par module.
 
 ### Etape 1, visualiseur de paquets
 
-**Etat: fait sous Linux. Ecrit mais jamais execute sous FreeBSD et macOS.**
+**Etat: fait et prouve sous Linux. Ecrit et compile pour FreeBSD, macOS et
+Windows; capture reelle pas encore confirmee sur ces trois-la.**
 
 | Exigence | Etat |
 |---|---|
 | Capturer tous les paquets de son interface | fait, `src/capture/capture_linux.cpp` |
-| Multiplateforme, Linux plus un autre systeme | partiel: `capture_bsd.cpp` compile, n'a jamais tourne |
+| Multiplateforme, Linux plus un autre systeme | fait x4: Linux prouve; `capture_bsd.cpp` (FreeBSD/macOS) et `capture_windows.cpp` compilent, capture reelle a confirmer |
 | Ethernet | fait, etiquettes VLAN empilees comprises |
 | IPv4 | fait, somme de controle verifiee, fragments detectes |
 | TCP | fait, les neuf drapeaux dont ECE, CWR et AE |
@@ -60,8 +62,9 @@ Comment le prouver: `./build/tests/tests` affiche le detail par module.
 
 Comment le prouver: `sudo ./build/mysniffer capture -c 10`.
 
-Ce qui reste a faire: faire tourner la partie BSD, dans une machine virtuelle
-FreeBSD ou via l'integration continue.
+Ce qui reste a faire: verifier l'etape "Capture reelle" du job macOS dans la
+CI GitHub (declenchee par le dernier push), et tester une vraie capture
+Windows dans une VM (Npcap ne peut pas s'installer silencieusement en CI).
 
 ### Etape 2, filtrage et recherche
 
@@ -126,13 +129,13 @@ ordinaire: sept fausses alertes avant ces corrections, zero apres.
 
 ### Etape 4, empaquetage et deploiement
 
-**Etat: partiel.**
+**Etat: fait.**
 
 | Exigence | Etat |
 |---|---|
 | Systeme de compilation avec une cible d'installation | fait, `cmake --install` |
-| Scripts de compilation et d'installation par plateforme | a faire |
-| Versionnage des livraisons (etiquettes, changelog) | a faire: aucun commit, aucune etiquette, `CHANGELOG.md` n'a qu'une section non publiee |
+| Scripts de compilation et d'installation par plateforme | fait: `scripts/install-linux.sh`, `install-freebsd.sh`, `install-macos.sh`; Windows passe par l'installeur Npcap lui-meme |
+| Versionnage des livraisons (etiquettes, changelog) | fait: commit, etiquette `v1.0.0`, `CHANGELOG.md` tenu a jour |
 | Documentation: compiler, installer, lancer, privileges | fait, quatre documents |
 
 ---
@@ -141,12 +144,12 @@ ordinaire: sept fausses alertes avant ces corrections, zero apres.
 
 | Element | Etat |
 |---|---|
-| Modules de capture, multiplateformes | partiel, BSD non teste |
+| Modules de capture, multiplateformes | fait pour 4 systemes; Linux prouve, FreeBSD/macOS/Windows compilent, capture reelle a confirmer |
 | Decodage des paquets | fait |
 | Filtrage | fait |
 | Analyse | fait |
 | Journalisation et stockage | fait: stockage `.pcap` et journal d'execution separe du resultat |
-| Compilation, empaquetage, deploiement | partiel |
+| Compilation, empaquetage, deploiement | fait |
 
 Sur la journalisation: `src/log/` tient un journal avec quatre niveaux de
 gravite, dirigeable vers un fichier. Il est volontairement separe du resultat:
