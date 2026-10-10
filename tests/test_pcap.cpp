@@ -1,7 +1,6 @@
 #include "check.hpp"
 
 #include <stdio.h>
-#include <unistd.h>
 
 #include "storage/pcap.hpp"
 
@@ -10,7 +9,7 @@
 // est bon, le format est respecte.
 static void test_round_trip(void)
 {
-    const char *path = "/tmp/mysniffer_test.pcap";
+    const char *path = "mysniffer_test.pcap";
     const uint8_t first[4] = {0xde, 0xad, 0xbe, 0xef};
     const uint8_t second[8] = {1, 2, 3, 4, 5, 6, 7, 8};
 
@@ -60,7 +59,7 @@ static void test_round_trip(void)
     CHECK(end == true);
 
     pcap_reader_close(&reader);
-    unlink(path);
+    remove(path);
 }
 
 // Verifie octet par octet que l'en-tete produit est conforme au format.
@@ -68,7 +67,7 @@ static void test_round_trip(void)
 // serait inutile: on controle donc les octets eux-memes.
 static void test_file_header_bytes(void)
 {
-    const char *path = "/tmp/mysniffer_header.pcap";
+    const char *path = "mysniffer_header.pcap";
     PcapWriter writer;
     std::string error;
 
@@ -104,14 +103,14 @@ static void test_file_header_bytes(void)
     CHECK(header[20] == 1);
     CHECK(header[21] == 0 && header[22] == 0 && header[23] == 0);
 
-    unlink(path);
+    remove(path);
 }
 
 // Un fichier ecrit sur une machine a l'ordre d'octets inverse doit se lire
 // aussi. On en fabrique un a la main pour le verifier.
 static void test_swapped_file(void)
 {
-    const char *path = "/tmp/mysniffer_swapped.pcap";
+    const char *path = "mysniffer_swapped.pcap";
     FILE *file = fopen(path, "wb");
 
     CHECK(file != NULL);
@@ -159,19 +158,19 @@ static void test_swapped_file(void)
     CHECK(packet.data[1] == 0xbb);
 
     pcap_reader_close(&reader);
-    unlink(path);
+    remove(path);
 }
 
 // Les fichiers abimes doivent etre refuses avec un message clair,
 // jamais provoquer un plantage.
 static void test_broken_files(void)
 {
-    const char *path = "/tmp/mysniffer_broken.pcap";
+    const char *path = "mysniffer_broken.pcap";
     PcapReader reader;
     std::string error;
 
     // Fichier qui n'existe pas.
-    CHECK(pcap_reader_open(&reader, "/tmp/nexiste_vraiment_pas.pcap", &error) == false);
+    CHECK(pcap_reader_open(&reader, "nexiste_vraiment_pas.pcap", &error) == false);
     CHECK(error.empty() == false);
 
     // Fichier vide.
@@ -221,7 +220,7 @@ static void test_broken_files(void)
     CHECK(error.find("tronque") != std::string::npos);
     pcap_reader_close(&reader);
 
-    unlink(path);
+    remove(path);
 }
 
 void test_pcap(void)

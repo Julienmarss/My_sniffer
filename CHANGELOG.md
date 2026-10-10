@@ -5,6 +5,17 @@ Toutes les modifications notables de ce projet sont listees ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et le projet suit le [versionnage semantique](https://semver.org/lang/fr/).
 
+## [1.0.2] - 2026-10-10
+
+### Corrige
+
+- `tests/test_pcap.cpp` et `tests/test_log.cpp` ne compilaient pas sous
+  Windows: `<unistd.h>` n'existe pas sur ce systeme, et les chemins codes en
+  dur `/tmp/...` n'y sont pas valides. Remplace `unlink()` par `remove()`
+  (standard C, deja inclus via `<stdio.h>`) et les chemins absolus par des
+  noms de fichiers relatifs au dossier d'execution des tests, qui marchent
+  identiquement sur les quatre systemes sans code specifique a l'un d'eux.
+
 ## [1.0.1] - 2026-10-10
 
 ### Corrige

@@ -1,7 +1,6 @@
 #include "check.hpp"
 
 #include <stdio.h>
-#include <unistd.h>
 
 #include "log/log.hpp"
 
@@ -27,9 +26,9 @@ void test_log(void)
 {
     printf("log\n");
 
-    const char *path = "/tmp/mysniffer_test_log.txt";
+    const char *path = "mysniffer_test_log.txt";
 
-    unlink(path);
+    remove(path);
 
     std::string error;
 
@@ -62,7 +61,7 @@ void test_log(void)
     CHECK(text.find("ceci aussi") != std::string::npos);
 
     log_close();
-    unlink(path);
+    remove(path);
 
     // Les niveaux se lisent en toutes lettres.
     LogLevel level = LOG_WARN;
