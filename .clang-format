@@ -1,0 +1,21 @@
+---
+# Style du projet: 4 espaces, accolade a la ligne pour les fonctions,
+# sur la meme ligne pour if/for/while. C'est le style classique en C et
+# celui qu'on utilise a Epitech.
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: c++17
+
+IndentWidth: 4
+ColumnLimit: 90
+UseTab: Never
+
+BreakBeforeBraces: Linux
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+PointerAlignment: Right
+DerivePointerAlignment: false
+
+SortIncludes: false

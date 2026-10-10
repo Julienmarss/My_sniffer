@@ -1,0 +1,32 @@
+DEMO SOUTENANCE - COMMANDES A LANCER DANS L ORDRE
+====================================================
+(remplacer wlo1 par votre interface si differente, voir etape 2)
+
+1) Version et aide
+   ./build/mysniffer --version
+   ./build/mysniffer --help
+
+2) Lister les interfaces
+   ./build/mysniffer interfaces
+
+3) Capture live (preuve que le decodage marche, tailles reelles)
+   sudo ./build/mysniffer capture -i wlo1 -c 20
+
+4) Filtrage (preuve du DSL de filtre)
+   sudo ./build/mysniffer capture -i wlo1 -c 10 -f "tcp and port 443"
+
+5) Enregistrer une capture dans un fichier .pcap
+   sudo ./build/mysniffer capture -i wlo1 -c 30 -w demo.pcap
+
+6) Relire ce fichier (aucun privilege requis, preuve du format pcap)
+   ./build/mysniffer read -r demo.pcap
+
+7) Analyse comportementale sur ce fichier (les 6 detecteurs du sujet)
+   ./build/mysniffer analyze -r demo.pcap
+
+====================================================
+RAPPEL - pourquoi on voit parfois "0 octets":
+
+Un ACK pur ou un SYN ne transporte aucune donnee, 0 octets est donc
+normal, pas un bug. L etape 3 le prouve: les paquets ACK+PSH affichent
+une vraie taille (ex: 1448 octets), preuve que le decodage fonctionne.

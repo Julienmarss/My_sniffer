@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    name: Linux (${{ matrix.compiler }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [g++, clang++]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compiler et tester
+        env:
+          CXX: ${{ matrix.compiler }}
+        run: |
+          cmake -S . -B build -DWARNINGS_AS_ERRORS=ON
+          cmake --build build
+          ctest --test-dir build --output-on-failure
+          ./build/mysniffer --version
+          ./build/mysniffer interfaces --all
+
+  sanitizers:
+    name: Linux (sanitizers)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Chercher les erreurs memoire
+        run: |
+          cmake -S . -B build -DSANITIZE=ON -DWARNINGS_AS_ERRORS=ON
+          cmake --build build
+          ctest --test-dir build --output-on-failure
+          ./build/mysniffer interfaces --all
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compiler et tester
+        run: |
+          cmake -S . -B build -DWARNINGS_AS_ERRORS=ON
+          cmake --build build
+          ctest --test-dir build --output-on-failure
+          ./build/mysniffer --version
+          ./build/mysniffer interfaces --all
+
+      # Contrairement a la VM FreeBSD, ce runner a une vraie carte reseau:
+      # on peut donc prouver une capture reelle, pas seulement la compilation.
+      # Les curl en arriere-plan garantissent du trafic a voir passer.
+      # Pas de "timeout" sous macOS (coreutils GNU absent): on borne a la main.
+      - name: Capture reelle (preuve sur du vrai materiel macOS)
+        run: |
+          sudo ./build/mysniffer capture -c 3 > capture.log 2>&1 &
+          CAPTURE_PID=$!
+          ( sleep 2
+            curl -s -o /dev/null https://example.com || true
+            curl -s -o /dev/null https://github.com || true
+            curl -s -o /dev/null https://1.1.1.1 || true ) &
+          i=0
+          while kill -0 "$CAPTURE_PID" 2>/dev/null; do
+            i=$((i + 1))
+            if [ "$i" -ge 30 ]; then
+              echo "aucun paquet recu en 30s, on arrete la capture"
+              sudo kill -INT "$CAPTURE_PID"
+              break
+            fi
+            sleep 1
+          done
+          wait "$CAPTURE_PID" || true
+          cat capture.log
+          count=$(grep -oE '[0-9]+ paquet\(s\) capture' capture.log | grep -oE '[0-9]+' || true)
+          [ -n "$count" ] && [ "$count" -gt 0 ] \
+            || { echo "ECHEC: aucun paquet reellement capture sur macOS"; exit 1; }
+
+  windows:
+    name: Windows (Npcap)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Seul le SDK (en-tetes + libs d'import) est necessaire pour compiler.
+      # Le pilote Npcap lui-meme n'est pas installe ici: comme pour FreeBSD et
+      # macOS, cette etape prouve la compilation et le comportement sans
+      # privileges, pas une capture reelle (voir docs/PRIVILEGES.md).
+      - name: Telecharger le SDK Npcap
+        run: |
+          curl.exe -L -o npcap-sdk.zip https://npcap.com/dist/npcap-sdk-1.16.zip
+          Expand-Archive -Path npcap-sdk.zip -DestinationPath npcap-sdk
+
+      - name: Compiler et tester
+        run: |
+          cmake -S . -B build -DWARNINGS_AS_ERRORS=ON -DNPCAP_SDK_DIR="${{ github.workspace }}\npcap-sdk"
+          cmake --build build --config Release
+          ctest --test-dir build -C Release --output-on-failure
+          $exe = Get-ChildItem -Path build -Recurse -Filter mysniffer.exe | Select-Object -First 1 -ExpandProperty FullName
+          & $exe --version
+          & $exe interfaces --all
+
+  freebsd:
+    # Les machines macOS de GitHub ne savent pas heberger de machine virtuelle,
+    # donc FreeBSD tourne dans une VM posee sur une machine Linux.
+    name: FreeBSD
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compiler et tester dans une VM FreeBSD
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "14.5"
+          usesh: true
+          copyback: false
+          prepare: |
+            pkg install -y cmake
+          run: |
+            set -e
+            cc --version
+            cmake -S . -B build -DWARNINGS_AS_ERRORS=ON
+            cmake --build build
+            ctest --test-dir build --output-on-failure
+            ./build/mysniffer --version
+            ./build/mysniffer interfaces --all

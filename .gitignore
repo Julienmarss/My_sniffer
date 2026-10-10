@@ -1,0 +1,54 @@
+# Build
+build/
+out/
+cmake-build-*/
+_deps/
+CMakeUserPresets.json
+
+# Packaging
+*.deb
+*.txz
+*.tgz
+*.pkg
+*.dmg
+_CPack_Packages/
+
+# Tooling
+compile_commands.json
+.cache/
+.ccache/
+*.gcda
+*.gcno
+*.profraw
+*.profdata
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Vagrant
+.vagrant/
+
+# Capture artefacts produced while testing
+*.pcap.local
+capture-*.pcap
+capture-*.jsonl
+
+# Notes personnelles, pas destinees au depot
+followup.txt
+
+# Dossier de recherche personnel: notes de travail en vrac (anglais, URLs et
+# citations brutes), utile pour soi mais pas une documentation du projet.
+# Garde en local, jamais pousse. Les 7 documents attendus par le sujet
+# (README, CHANGELOG, LICENSE, docs/BUILD.md, docs/INSTALL.md, docs/USAGE.md,
+# docs/PRIVILEGES.md) n'en dependent pas.
+docs/defense/research/
+
+# DESIGN.md et ANALYSIS.md: pas nommes par le sujet (qui demande seulement
+# build/install/run/privileges, couverts par les 4 docs ci-dessus). Gardes en
+# local pour soi, pas pousses.
+docs/DESIGN.md
+docs/ANALYSIS.md
