@@ -5,6 +5,17 @@ Toutes les modifications notables de ce projet sont listees ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et le projet suit le [versionnage semantique](https://semver.org/lang/fr/).
 
+## [1.0.3] - 2026-10-10
+
+### Corrige
+
+- `tests/test_iface.cpp` supposait que la boucle locale s'appelle "lo" ou
+  "lo0": vrai sur Linux/BSD/macOS, faux sous Windows (un GUID). Cette
+  verification de nom precis contredisait d'ailleurs le commentaire en tete
+  de fichier, qui annonce ne tester que des proprietes valables partout.
+  Retiree; `is_loopback` et `interface_is_capturable() == false` suffisent
+  a prouver que la boucle locale est bien reconnue et exclue de la capture.
+
 ## [1.0.2] - 2026-10-10
 
 ### Corrige

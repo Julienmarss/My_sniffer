@@ -4,7 +4,7 @@
 
 // Ces tests interrogent la vraie machine. Ils ne verifient donc pas des noms
 // precis, mais des proprietes vraies sur n'importe quelle machine Linux,
-// FreeBSD ou macOS. Ils ne demandent aucun privilege.
+// FreeBSD, macOS ou Windows. Ils ne demandent aucun privilege.
 void test_iface(void)
 {
     printf("iface\n");
@@ -32,8 +32,9 @@ void test_iface(void)
             found_loopback = true;
             // La boucle locale ne doit jamais etre proposee pour capturer.
             CHECK(interface_is_capturable(list[i]) == false);
-            // Elle s'appelle "lo" sur Linux, "lo0" sur FreeBSD et macOS.
-            CHECK(list[i].name == "lo" || list[i].name == "lo0");
+            // Son nom change selon le systeme ("lo", "lo0", un GUID sous
+            // Windows...): ce n'est pas une propriete qu'on peut verifier
+            // partout, voir le commentaire en tete de fichier.
         }
     }
 
