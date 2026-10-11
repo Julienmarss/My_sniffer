@@ -125,6 +125,13 @@ if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
+# Bonus: interface web locale. Outil de demonstration pour cette machine,
+# pas un livrable multiplateforme: on ne le compile que sous Linux, pour ne
+# prendre absolument aucun risque sur les trois autres systemes.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_executable(mysniffer-gui src/gui/server.cpp)
+endif()
+
 # Installation: "cmake --install build" copie le programme dans le systeme.
 include(GNUInstallDirs)
 install(TARGETS mysniffer RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -5,6 +5,27 @@ Toutes les modifications notables de ce projet sont listees ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et le projet suit le [versionnage semantique](https://semver.org/lang/fr/).
 
+## [1.1.0] - 2026-10-10
+
+### Ajoute
+
+- Bonus: interface web locale (`src/gui/server.cpp`, cible `mysniffer-gui`).
+  Serveur HTTP minimal fait maison (sockets ordinaires, zero dependance,
+  ordre des octets reseau recompose a la main comme ailleurs dans le
+  projet), une page avec sept boutons qui lancent de vraies commandes et
+  affichent le resultat tel quel. Compile uniquement sous Linux: outil de
+  demonstration pour cette machine, pas un livrable multiplateforme.
+  Un fichier `.pcap` ARP+ICMP+TCP est embarque pour que le bouton bonus
+  marche sans dependre d'un vrai trafic au bon moment pendant l'oral.
+  Protege par un jeton tire au hasard a chaque lancement (une page ouverte
+  dans un autre onglet ne peut pas declencher une capture a notre insu), par
+  la verification de l'en-tete `Host` sur chaque requete (empeche qu'une page
+  attaquante fasse pointer son propre nom de domaine vers 127.0.0.1 apres
+  coup pour se faire passer pour ce serveur et lire le jeton dans la page),
+  et par un dossier temporaire prive cree a chaque demarrage (`mkdtemp`,
+  droits 0700) au lieu de chemins fixes dans `/tmp`, partage par tout le
+  monde et donc piegeable par un lien symbolique pose a l'avance.
+
 ## [1.0.3] - 2026-10-10
 
 ### Corrige

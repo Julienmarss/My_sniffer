@@ -170,7 +170,28 @@ parfaite. Rien de tout ceci ne doit etre commence avant.
 | ICMP | fait: `src/dissect/icmp.cpp`, type/code/somme, identifiant+sequence pour l'echo |
 | IPv6, DNS, HTTP | a faire. IPv6 est deja reconnu (ethertype), mais pas decode. |
 | Detection d'un autre analyseur sur le reseau | a faire, deja etudiee (notes personnelles) |
-| Interface graphique ou texte | a faire |
+| Interface graphique ou texte | fait: `src/gui/server.cpp`, page web locale (boutons -> vraies commandes). Linux uniquement, voir plus bas |
+
+### Lancer l'interface web
+
+Compile uniquement sous Linux (`CMakeLists.txt` l'exclut ailleurs: outil de
+demonstration pour cette machine, pas un livrable multiplateforme).
+
+```sh
+sudo ./build/mysniffer-gui
+```
+
+`sudo` est necessaire pour que les boutons de capture en direct marchent
+(memes privileges que `sudo ./build/mysniffer capture`). Puis ouvrir
+`http://127.0.0.1:7878` dans un navigateur. Sept boutons, chacun lance une
+vraie commande et affiche son resultat tel quel: version, interfaces, capture
+en direct, filtrage, ecriture+relecture d'un `.pcap`, analyse comportementale,
+et un bonus ARP+ICMP (lit un fichier `.pcap` prepare a l'avance, pour ne pas
+dependre d'une vraie trame ARP qui passerait au bon moment pendant l'oral).
+
+Aucune commande n'est jamais construite a partir de ce que le navigateur
+envoie: chaque bouton correspond a une commande ecrite a l'avance dans
+`ACTIONS`, le navigateur ne fait que choisir laquelle.
 
 ---
 
